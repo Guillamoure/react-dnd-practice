@@ -11,3 +11,16 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+#field {
+  width: 50vw;
+  height: 50vh;
+  border: 1px solid black;
+}
+
+#storage {
+  width: 40vw;
+  height: 40vh;
+  border: 1px solid salmon;
+  left: 60%;
+}

@@ -1,28 +1,94 @@
-import React from "react";
-import { useDrop } from "react-dnd";
+import React, {useEffect, useState} from "react";
 import Box from "./box";
+import EmptyBox from "./emptyBox";
 
 const Field = () => {
 
-  const [boxes, setBoxes] = React.useState([{color: "grey", h: 1, w: 1}])
+  const [boxes, setBoxes] = useState([])
+  const [area, setArea] = useState([])
 
-  React.useEffect(() => {
-    console.log("what is the boxes", boxes)
-  }, [boxes])
+  useEffect(() => {
+    if (!area.length){
+      let updatedAreas = []
+      let count = 0
+      for (let i = 0; i < 4; i++) {
+        let row = [];
+        for (let j = 0; j < 4; j++) {
+          row.push(`square${count}`);
+          ++count;
+        }
+        updatedAreas.push(row);
+      }
+      setArea(updatedAreas)
+    }
+  }, [])
 
-  const handleDrop = (item) => {
-    console.log(boxes)
-    setBoxes([...boxes, item])
+  useEffect(() => {
+    if (area.length){
+      // find out how many of this element exists, and append that to the name
+      console.log(area)
+      console.log(boxes)
+      // put it in area
+    }
+  }, [area])
+
+  const handleDrop = (item, name) => {
+    if (isValid(item, name)){
+      let [x, y] = findEmptyBoxIndex(name)
+      setBoxes([...boxes, {...item, x, y}])
+      let count = countOfThisComponent(item)
+      let updatedArea = area.map((a, i) => {
+        return a.map((b, j) => {
+          if (i === x && j === y){
+            return `${item.element}${count}`
+          } else {return b}
+        })
+      })
+      setArea(updatedArea)
+    }
   }
 
-  const [{isOver, getItem}, drop] = useDrop(() => ({
-    accept: "SQUARE",
-    drop: (item) => handleDrop(item),
-    collect: (monitor) => ({
-      getItem: monitor.getItem(),
-      isOver: monitor.isOver()
-    })
-  }), [boxes])
+  const findEmptyBoxIndex = (name) => {
+    let x = null
+    let y = null
+
+    for (let i = 0; i < 4; i++) {
+      for (let j = 0; j < 4; j++) {
+        if (area[i][j] === name){
+          x = i
+          y = j
+        }
+      }
+    }
+    return [x, y]
+  }
+
+  const countOfThisComponent = (item) => {
+    return boxes.filter(b => b.name === item.name ).length
+  }
+
+  const isValid = (item, name) => {
+    if (item.h === 1 && item.w === 1){
+      if (name.includes("square")){
+        return true
+      }
+    }
+  }
+
+  const calcAreas = () => {
+    if (!area.length) {
+      return "";
+    }
+    let string = "";
+    area.forEach((x) => {
+      string += `'${x.join(" ")}'`;
+    });
+    return string;
+  };
+
+  let style = {
+    gridTemplateAreas: calcAreas(),
+  }
 
   const renderBoxes = () => {
 		return boxes.map((box, i) => {
@@ -30,9 +96,23 @@ const Field = () => {
 		})
 	}
 
+  const renderAreas = () => {
+    console.log(area)
+    return area.map((a, x) => {
+      return a.map((b, y) => {
+        if (b.includes("square")) {
+          return <EmptyBox name={b} handleDrop={handleDrop} boxes={boxes} />;
+        } else if (b.includes("box")){
+          let {color, h, w, element} = boxes.find(box => box.x === x && box.y === y)
+          return <Box color={color} h={h} w={w} />
+        }
+      });
+    });
+  }
+
   return (
-    <main id="field" ref={drop}>
-      {renderBoxes()}
+    <main id="field" style={style}>
+      {renderAreas()}
     </main>
   )
 }

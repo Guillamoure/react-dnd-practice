@@ -1,5 +1,5 @@
 import React from "react";
-import StorageBox from "./storageBox";
+import Box from "./box";
 
 const Storage = () => {
 
@@ -11,7 +11,7 @@ const Storage = () => {
 
 	const renderBoxes = () => {
 		return boxes.map((box, i) => {
-			return <StorageBox color={box.color} h={box.h} w={box.w} key={i}/>
+			return <Box color={box.color} h={box.h} w={box.w} key={i} element={"box"}/>
 		})
 	}
 

@@ -12,13 +12,14 @@ const EmptyBox = ({name, handleDrop, boxes}) => {
     })
   }), [boxes])
 
-		let style = {
-			height: '98px',
-			width: '98px',
-			EmptySizing: 'border-box',
-			border: '1px solid grey',
-      gridArea: name
-  	}
+  let style = {
+    height: '98px',
+    width: '98px',
+    EmptySizing: 'border-box',
+    border: '1px solid grey',
+    gridArea: name,
+    backgroundColor: isOver ? "lightpink" : "white"
+  }
 
 	return (
 		<section style={style} ref={drop}>

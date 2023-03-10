@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import { useDrop } from "react-dnd";
 
-const EmptyBox = ({data, handleDrop, boxes, handleHover, hoveredSquare, dragData, areas}) => {
+const EmptyBox = ({data, handleDrop, boxes, handleHover, dragData, areas}) => {
 
 	const [{isOver, getItem}, drop] = useDrop(() => ({
     accept: "SQUARE",
@@ -27,7 +27,7 @@ const EmptyBox = ({data, handleDrop, boxes, handleHover, hoveredSquare, dragData
     backgroundColor: "white"
   }
 
-  if (!!hoveredSquare) {
+  if (Object.keys(dragData).length) {
     if (data.valid === 1){
       style.backgroundColor = "lightgreen"
     } else if (data.valid === -1) {

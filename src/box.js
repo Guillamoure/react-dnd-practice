@@ -3,15 +3,17 @@ import { useDrag } from "react-dnd";
 
 const Box = ({color, h, w, element, handleDrag, area}) => {
 
-	const [{getInitialClientOffset, getInitialSourceClientOffset, isDragging}, drag] = useDrag(() => ({
+	const [{getInitialClientOffset, getInitialSourceClientOffset, isDragging, didDrop}, drag] = useDrag(() => ({
 		type: "SQUARE",
 		item: {color, h, w, element},
 		collect: (monitor) => ({
 			getInitialClientOffset: monitor.getInitialClientOffset(),
 			getInitialSourceClientOffset: monitor.getInitialSourceClientOffset(),
-			isDragging: monitor.isDragging()
+			isDragging: monitor.isDragging(),
+			didDrop: monitor.didDrop()
 		})
 	}))
+
 
 	useEffect(() => {
 		if (isDragging){
@@ -34,6 +36,8 @@ const Box = ({color, h, w, element, handleDrag, area}) => {
 	
 		}
 	}, [isDragging])
+
+
 
 	const style = {
 		backgroundColor: color,

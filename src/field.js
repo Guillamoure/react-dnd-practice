@@ -1,69 +1,45 @@
-import { hover } from "@testing-library/user-event/dist/hover";
 import React, {useEffect, useState} from "react";
 import Box from "./box";
 import EmptyBox from "./emptyBox";
+import {validPlacement} from "./utils/validPlacement";
 
-const Field = ({dragData, setDragData}) => {
+const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
 
   const [boxes, setBoxes] = useState([])
   const [areas, setArea] = useState([])
-  const [hoveredSquare, setHoveredSquare] = useState("")
 
   useEffect(() => {
     if (Object.keys(dragData).length && !!hoveredSquare){
 
       // find active hovering square
+      //TODO: x determines which row its in, so it is not the x value
+        // same for y, it determines how far from the left it is, so it is not the y value
       const [x, y] = findEmptyBoxIndex(hoveredSquare)
       console.log(dragData)
       console.log(hoveredSquare)
       // find adjacent possible squares due to width/height
 
       let invalidSquares = []
-      let validSquares = []
-      let valid = true
+      // let validSquares = []
+      // let valid = true
 
-      if (areas[x][y].area.includes("square")){
-        console.log(dragData.unitsWide == 1)
-        console.log(dragData.unitsHigh === 1)
-        console.log(areas[x][y].area.includes("square"))
-        if (!(dragData.unitsWide == 1 && dragData.unitsHigh === 1 && areas[x][y].area.includes("square"))){
-          if (dragData.percentageX < dragData.unitsWide){
-            for(let i = y; i <= y+(dragData.unitsWide - dragData.percentageX); i++){
-              // debugger
-              if (areas[x][i] && areas[x][i].area.includes("square")){
-                validSquares.push(areas[x][i].area)
-              } else {
-                valid = false
-              }
-              
-              // item is 2 wide, grabbed on 1, drag over 3,2
-              // check 3,2 then check 3,3
-            }
-          }
-          if (dragData.percentageX === dragData.unitsWide){
-            for(let i = y; i > y-dragData.unitsWide; i--){
-              // debugger
-              if (areas[x][i] && areas[x][i].area.includes("square")){
-                validSquares.push(areas[x][i].area)
-              } else {
-                valid =  false
-              }
-            }
-          }
-        } else {           
-          validSquares.push(areas[x][y].area)
-        }
-      }
+      let cleanAreas = [...areas].map(a => {
+        return a.map(b => {
+          return {...b, valid: 0}
+        })
+      })
+
+        const [validSquares, valid] = validPlacement(cleanAreas, dragData, {x, y})
         
         console.log("valid", validSquares)
-        console.log("invalid", invalidSquares)
+        // console.log("invalid", invalidSquares)
         console.log("is it valid?", valid)
 
         // validSquares = validSquares.map(sq => {
         //   const [sqx, sqy] = findEmptyBoxIndex(sq)
         //   updatedArea[sqx][sqy] += "y"
         // })
-      let updatedArea = [...areas].map((a, i) => {
+      let updatedArea = [...cleanAreas].map((a, i) => {
         return a.map((b, j) => {
           if (validSquares.includes(b.area) && valid){
             return {...b, valid: 1}
@@ -112,6 +88,7 @@ const Field = ({dragData, setDragData}) => {
   }
 
   const handleDrop = (item, name) => {
+    console.log("is this hit?")
     if (isValid()){
       let [rowStart, rowEnd, colStart, colEnd] = findValidIndices()
       setBoxes([...boxes, {...item, rowStart, rowEnd, colStart, colEnd}])
@@ -211,7 +188,7 @@ const Field = ({dragData, setDragData}) => {
     return areas.map((a, x) => {
       return a.map((b, y) => {
         if (b.area.includes("square")) {
-          return <EmptyBox data={b} handleDrop={handleDrop} boxes={boxes} handleHover={handleHover} hoveredSquare={hoveredSquare} dragData={dragData} areas={areas}/>;
+          return <EmptyBox data={b} handleDrop={handleDrop} boxes={boxes} handleHover={handleHover} dragData={dragData} areas={areas}/>;
         } else if (b.area.includes("box")){
           if (y != 0 && areas[x][y-1].area === b.area){
             return

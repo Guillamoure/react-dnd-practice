@@ -1,15 +1,29 @@
 import './App.css';
-import React from 'react';
+import React, { useState } from 'react';
 import Field from './field';
 import Storage from './storage';
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
+import { useDrop } from "react-dnd";
+
 
 const App = () => {
 
-  const [dragData, setDragData] = React.useState({})
+  const [dragData, setDragData] = useState({})
+  const [hoveredSquare, setHoveredSquare] = useState("")
+
+  const handleDrop = () => {
+    setDragData({})
+    setHoveredSquare("")
+  }
+
+  const [, drop] = useDrop(() => ({
+    accept: "SQUARE",
+    drop: handleDrop
+  }))
 
   const handleDrag = ({perX, perY, w, h}) => {
+    if (!perX){
+      setDragData({})
+    }
 			let splitW = 1/w
 			let countW = 1
 			let foundW = false
@@ -50,12 +64,10 @@ const App = () => {
 
 
   return (
-    <div className="App">
-      <DndProvider backend={HTML5Backend}>
-        <Field dragData={dragData} setDragData={setDragData}/>
+      <div className="App" ref={drop}>
+        <Field dragData={dragData} setDragData={setDragData} hoveredSquare={hoveredSquare} setHoveredSquare={setHoveredSquare}/>
         <Storage handleDrag={handleDrag}/>
-      </DndProvider>
-    </div>
+      </div>
   );
 }
 

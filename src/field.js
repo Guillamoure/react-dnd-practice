@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
 import Box from "./box";
 import EmptyBox from "./emptyBox";
-import {validPlacement} from "./utils/validPlacement";
+import { validPlacement, removeElementFromAreas, removeElementFromBoxes } from "./utils/field-utils";
 
-const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
+const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare, handleDrag}) => {
 
   const [boxes, setBoxes] = useState([])
   const [areas, setArea] = useState([])
@@ -19,28 +19,21 @@ const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
       console.log(hoveredSquare)
       // find adjacent possible squares due to width/height
 
-      let invalidSquares = []
-      // let validSquares = []
-      // let valid = true
-
       let cleanAreas = [...areas].map(a => {
         return a.map(b => {
           return {...b, valid: 0}
         })
       })
+      cleanAreas = removeElementFromAreas(dragData.id, cleanAreas)
 
-        const [validSquares, valid] = validPlacement(cleanAreas, dragData, {x, y})
-        
-        console.log("valid", validSquares)
-        // console.log("invalid", invalidSquares)
-        console.log("is it valid?", valid)
+      const [validSquares, valid] = validPlacement(cleanAreas, dragData, {x, y})
+      
+      console.log("valid", validSquares)
+      console.log("is it valid?", valid)
 
-        // validSquares = validSquares.map(sq => {
-        //   const [sqx, sqy] = findEmptyBoxIndex(sq)
-        //   updatedArea[sqx][sqy] += "y"
-        // })
       let updatedArea = [...cleanAreas].map((a, i) => {
         return a.map((b, j) => {
+
           if (validSquares.includes(b.area) && valid){
             return {...b, valid: 1}
           } else if (validSquares.includes(b.area) && !valid){ 
@@ -87,16 +80,32 @@ const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
     setHoveredSquare(name)
   }
 
-  const handleDrop = (item, name) => {
-    console.log("is this hit?")
+  const handleDrop = (item) => {
+    console.log("what is this item?", item)
     if (isValid()){
-      let [rowStart, rowEnd, colStart, colEnd] = findValidIndices()
-      setBoxes([...boxes, {...item, rowStart, rowEnd, colStart, colEnd}])
       let count = countOfThisComponent(item)
-      let updatedArea = areas.map((a, i) => {
+      let id = `${item.element}${count}`
+      if (item.id){
+        let [rowStart, rowEnd, colStart, colEnd] = findValidIndices()
+        let updateBoxes = [...boxes].map(box => {
+          if (box.id === item.id){
+            return {...box, rowStart, rowEnd, colStart, colEnd}
+          } else {
+            return box
+          }
+        })
+        setBoxes(updateBoxes)
+      } else {
+        let [rowStart, rowEnd, colStart, colEnd] = findValidIndices()
+        setBoxes([...boxes, {...item, rowStart, rowEnd, colStart, colEnd, id}])
+      }
+      // this would move the new component, but it wouldnt clear out the old component in the areas array :/
+      let updatedArea = item.coordinates ? removeElementFromAreas(item.id, [...areas]) : [...areas]
+      let [rowStart, rowEnd, colStart, colEnd] = findValidIndices()
+      updatedArea = updatedArea.map((a, i) => {
         return a.map((b, j) => {
           if (i >= colStart && i <= colEnd && j >= rowStart && j <= rowEnd){
-            return {area: `${item.element}${count}`}
+            return {area: `${item.id || id}`}
           } else {return b}
         })
       })
@@ -139,7 +148,7 @@ const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
   }
 
   const countOfThisComponent = (item) => {
-    return boxes.filter(b => b.name === item.name).length
+    return boxes.filter(b => b.element === item.element).length
   }
 
   const isValid = () => {
@@ -176,6 +185,11 @@ const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
     gridTemplateAreas: calcAreas(),
   }
 
+  const removeElement = (id) => {
+    setArea(removeElementFromAreas(id, areas))
+    setBoxes(removeElementFromBoxes(id, boxes))
+  }
+
   const renderBoxes = () => {
 		return boxes.map((box, i) => {
 			return <Box color={box.color} h={box.h} w={box.w} key={i * 1000}/>
@@ -183,8 +197,6 @@ const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
 	}
 
   const renderAreas = () => {
-    console.log(areas)
-    console.log(boxes)
     return areas.map((a, x) => {
       return a.map((b, y) => {
         if (b.area.includes("square")) {
@@ -196,8 +208,9 @@ const Field = ({dragData, setDragData, hoveredSquare, setHoveredSquare}) => {
           if (x != 0 && areas[x-1][y].area === b.area){
             return
           }
-          let {color, h, w, element} = boxes.find(box => box.colStart === x && box.rowStart === y)
-          return <Box color={color} h={h} w={w} area={b.area}/>
+          let { color, h, w, element, rowStart, rowEnd, colStart, colEnd, id } = boxes.find(box => box.colStart === x && box.rowStart === y)
+          let coordinates = {rowStart, rowEnd, colStart, colEnd}
+          return <Box id={id} color={color} h={h} w={w} area={b.area} handleDrag={handleDrag} element={element} coordinates={coordinates} removeElement={removeElement}/>
         }
       });
     });

@@ -1,11 +1,11 @@
 import React, {useEffect} from "react";
 import { useDrag } from "react-dnd";
 
-const Box = ({color, h, w, element, handleDrag, area}) => {
+const Box = ({color, h, w, element, handleDrag, area, coordinates=null, removeElement, id}) => {
 
 	const [{getInitialClientOffset, getInitialSourceClientOffset, isDragging, didDrop}, drag] = useDrag(() => ({
 		type: "SQUARE",
-		item: {color, h, w, element},
+		item: {color, h, w, element, coordinates, id},
 		collect: (monitor) => ({
 			getInitialClientOffset: monitor.getInitialClientOffset(),
 			getInitialSourceClientOffset: monitor.getInitialSourceClientOffset(),
@@ -32,7 +32,7 @@ const Box = ({color, h, w, element, handleDrag, area}) => {
 			// console.log(w, h, color)
 			// console.log(perX, perY)
 	
-			handleDrag({perX, perY, w, h})
+			handleDrag({perX, perY, w, h, id})
 	
 		}
 	}, [isDragging])
@@ -49,9 +49,13 @@ const Box = ({color, h, w, element, handleDrag, area}) => {
 		gridArea: area
 	}
 
+	const handleRemove = () => {
+		removeElement(id)
+	}
+
 	return (
 		<section style={style} ref={drag}>
-			
+			{coordinates && <button onClick={handleRemove}>X</button>}
 		</section>
 	)
 }

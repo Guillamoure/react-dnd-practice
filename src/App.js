@@ -20,7 +20,7 @@ const App = () => {
     drop: handleDrop
   }))
 
-  const handleDrag = ({perX, perY, w, h}) => {
+  const handleDrag = ({perX, perY, w, h, id}) => {
     if (!perX){
       setDragData({})
     }
@@ -58,14 +58,15 @@ const App = () => {
         unitsWide: w,
         unitsHigh: h,
         percentageX: countW,
-        percentageY: countH
+        percentageY: countH,
+        id
       })
   }
 
 
   return (
       <div className="App" ref={drop}>
-        <Field dragData={dragData} setDragData={setDragData} hoveredSquare={hoveredSquare} setHoveredSquare={setHoveredSquare}/>
+        <Field dragData={dragData} setDragData={setDragData} hoveredSquare={hoveredSquare} setHoveredSquare={setHoveredSquare} handleDrag={handleDrag}/>
         <Storage handleDrag={handleDrag}/>
       </div>
   );
